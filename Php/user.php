@@ -11,14 +11,18 @@ class User implements Crud, Authenticator{
  private $username;
  private $password;
  private $error;
+ private $timezone_offset;
+ private $utc_timestamp;
 
- function __construct($first_name, $last_name, $city_name, $username, $password, $error){
+ function __construct($first_name, $last_name, $city_name, $username, $password, $error, $timezone_offset, $utc_timestamp){
   $this->first_name = $first_name;
   $this->last_name = $last_name;
   $this->city_name = $city_name;
   $this->username = $username;
   $this->password = $password;
   $this->error = $error;
+  $this->utc_timestamp = $utc_timestamp;
+  $this->timezone_offset = $timezone_offset;
  }
 
 //  We can't create multiple constructors
@@ -54,6 +58,22 @@ public static function create(){
     return $this->$user_id;
   }
 
+  Public function setTzo($timezone_offset){
+    $this->timezone_offset = $timezone_offset;
+  }
+
+  public function getTzo(){
+    return $this->$timezone_offset;
+  }
+
+  Public function setUtcStamp($utc_timestamp){
+    $this->utc_timestamp = $utc_timestamp;
+  }
+
+  public function getUtcStamp(){
+    return $this->$utc_timestamp;
+  }
+
   //Insert new user to database
   public function save(){
   $conn = new DBConnector;
@@ -64,8 +84,10 @@ public static function create(){
   $uname = $this->username;
   $this->hashpassword();
   $pass = $this->password;
+  $tzo = $this->timezone_offset;
+  $utc = $this->utc_timestamp;
 
-  $res = mysqli_query($conn->conn, "INSERT INTO `user`(`first_name`, `last_name`, `user_city`, `username`, `password`) VALUES ('$fn', '$ln', '$city', '$uname', '$pass')")or die ("Error: " .mysqli_error($conn->conn));
+  $res = mysqli_query($conn->conn, "INSERT INTO `user`(`first_name`, `last_name`, `user_city`, `username`, `password`, `timestamp`, `timezone_offset`) VALUES ('$fn', '$ln', '$city', '$uname', '$pass', '$utc', '$tzo')")or die ("Error: " .mysqli_error($conn->conn));
 
       mysqli_close($conn->conn);
     return $res;
@@ -146,6 +168,8 @@ public static function create(){
       $_SESSION['form_errors'] = "All fields are required";
     }else if($error == 2){
       $_SESSION['form_errors'] = "This Username is taken";
+    }else if($error == 3){
+      $_SESSION['form_errors'] = "Your password is incorrect";
     }
   }
 
@@ -160,12 +184,12 @@ public static function create(){
     $conn = new DBConnector;
 
     $found = false;
-    $state = "SELECT * FROM `user` WHERE 1";
+    $state = "SELECT `username`, `password` FROM `user`";
     $res = mysqli_query($conn->conn, $state);
 
     //fetch data from db, loop through it and confirm entries are correct
-    while($row = $res->fetch_assoc()){
-      if(password_verify($this->getPassword(),$row['password']) && $this->getUsername() == $row['username']){
+    while($row = $res->fetch_array()){
+      if(password_verify($this->getPassword(), $row['password']) && $this->getUsername() == $row['username']){
         $found = true;
       }
     }
@@ -175,15 +199,13 @@ public static function create(){
 
   //Correct password allows us to load the next page "private page"
   public function login(){
-    if($this->isPasswordCorrect()){
-      header("Location: private_page.php");
-    }
+    header("Location: private_page.php");
   }
 
   //Create a session for the user
   public function createSession(){
     session_start();
-    $_SESSION['username'] = $this->getUsername;
+    return $_SESSION['username'] = $this->getUsername();
   }
 
   //Log out of website

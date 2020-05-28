@@ -1,26 +1,31 @@
 <?php
+include_once "fileUploader.php";
 include_once "user.php";
 include_once "DBConnector.php";
 
 $conn = new DBConnector;
 
-if(isset($_POST['btn-logn'])){
+if(isset($_POST['btn-login'])){
   $username = $_POST['username'];
   $password = $_POST['password'];
+  $first_name = null;
+  $last_name = null;
+  $city = null;
+  $error = null;
 
-  $instance = User::create();
-  $instance->setUsername($username);
-  $instance->setPassword($password);
+  $instance = new User($first_name, $last_name, $city, $username, $password, $error);
 
   if($instance->isPasswordCorrect()){
-   $instance->login();
-   mysqli_close($conn);
-
+    $instance->createSession();
+    $instance->login();
+    die();
    //Create a new session for the logged in user
-   $instance->createSession();
-  }else{
-   mysqli_close($conn);
-   header("Loaction: login.php");
+  }
+  else{
+    $error = 3; 
+    $instance->createFormErrorSessions($error);
+    header("Refresh:0");
+    die();
   }
 }
 ?>

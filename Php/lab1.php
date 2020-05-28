@@ -6,30 +6,31 @@
       $conn = new DBConnector;//DB connection
    
    if (isset($_POST['btn-save'])) {
-       $first_name = $_POST['first_name'];
-       $last_name = $_POST['last_name'];
-       $city = $_POST['city_name'];
-       $username = $_POST['username'];
-       $password = $_POST['password'];
-       $file_original_name = $_FILES['fileToUpload']['name'];
-       $file_size = $_FILES['fileToUpload']['size'];
-       $file_type=$_FILES['fileToUpload']['type'];
-       $file_ext = strtolower(end(explode('.', $_FILES['fileToUpload']['name'])));
-       $file_final =$_FILES['fileToUpload']['tmp_name'];
-       $error = null;
-       $utc_timestamp = $_POST['utc_timestamp'];
-       $offset = $_POST['time_zone_offset'];
-   
-       //user object created
-       $user = new User($first_name, $last_name, $city, $username, $password, $error, $offset, $utc_timestamp);
+      $first_name = $_POST['first_name'];
+      $last_name = $_POST['last_name'];
+      $city = $_POST['city_name'];
+      $username = $_POST['username'];
+      $password = $_POST['password'];
+      $file_original_name = $_FILES["fileToUpload"]["name"];
+      $file_size = $_FILES["fileToUpload"]["size"];
+      $file_type=$_FILES["fileToUpload"]["type"];
+      $arr = explode('.', $_FILES["fileToUpload"]["name"]);
+      $file_ext = strtolower(end($arr));
+      $file_final =$_FILES["fileToUpload"]["tmp_name"];
+      $error = null;
+      $utc_timestamp = $_POST['utc_timestamp'];
+      $offset = $_POST['time_zone_offset'];
 
-       // create a file object
-       $upload = new FileUploader();
-       $upload->setOriginalName($file_original_name);
-       $upload->setType($file_type);
-       $upload->setSize($file_size);
-       $upload->setFinalName($file_final);
-       $upload->setUsername($username);
+      //user object created
+      $user = new User($first_name, $last_name, $city, $username, $password, $error, $offset, $utc_timestamp);
+
+      // create a file object
+      $upload = new FileUploader();
+      $upload->setOriginalName($file_original_name);
+      $upload->setType($file_type);
+      $upload->setSize($file_size);
+      $upload->setFinalName($file_final);
+      $upload->setUsername($username);
 
        //Check form for any errors
       if (!$user->validateForm()) {
@@ -44,12 +45,12 @@
          die();
       }
 
-      if ($fileUploader->fileWasSelected()) {
-         if ($fileUploader->fileTypeisCorrect()) {
-            if ($fileUploader->fileSizeIsCorrect()) {
-                  if (!($fileUploader->fileAlreadyExists())) {
+      if ($upload->fileWasSelected()) {
+         if ($upload->fileTypeisCorrect()) {
+            if ($upload->fileSizeIsCorrect()) {
+                  if (!($upload->fileAlreadyExists())) {
                      $user->save();
-                     $fileUploader->uploadFile() ;
+                     $upload->uploadFile() ;
                   } else {
                      echo "This image already exists"."<br>";
                   }
@@ -95,7 +96,7 @@
  <link rel="stylesheet" type="text/css" href="../Css/validate.css">
 </head>
 <body>
-   <form action="" method="post" name="user_details" onsubmit="return validateForm()" action="<?=$_SERVER['PHP_SELF']?>">
+   <form action="" method="post" name="user_details" onsubmit="return validateForm()" action="<?=$_SERVER['PHP_SELF']?>" enctype="multipart/form-data">
       <table align="center">
       <tr>
          <td>

@@ -12,8 +12,10 @@ if(isset($_POST['btn-login'])){
   $last_name = null;
   $city = null;
   $error = null;
+  $utc_timestamp = null;
+  $offset = null;
 
-  $instance = new User($first_name, $last_name, $city, $username, $password, $error);
+  $instance = new User($first_name, $last_name, $city, $username, $password, $error, $timezone_offset, $utc_timestamp);
 
   if($instance->isPasswordCorrect()){
     $instance->createSession();

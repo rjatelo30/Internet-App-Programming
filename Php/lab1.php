@@ -6,23 +6,30 @@
       $conn = new DBConnector;//DB connection
    
    if (isset($_POST['btn-save'])) {
+      // user parameters
       $first_name = $_POST['first_name'];
       $last_name = $_POST['last_name'];
       $city = $_POST['city_name'];
       $username = $_POST['username'];
       $password = $_POST['password'];
+
+      //file upload parameters
       $file_original_name = $_FILES["fileToUpload"]["name"];
       $file_size = $_FILES["fileToUpload"]["size"];
-      $file_type=$_FILES["fileToUpload"]["type"];
-      $arr = explode('.', $_FILES["fileToUpload"]["name"]);
-      $file_ext = strtolower(end($arr));
+      $file_type = strtolower(pathinfo($file_original_name, PATHINFO_EXTENSION));
       $file_final =$_FILES["fileToUpload"]["tmp_name"];
       $error = null;
+
+      //timezone parameters
       $utc_timestamp = $_POST['utc_timestamp'];
       $offset = $_POST['time_zone_offset'];
 
       //user object created
-      $user = new User($first_name, $last_name, $city, $username, $password, $error, $offset, $utc_timestamp);
+      $user = new User($first_name, $last_name, $city, $username, $password, $error);
+
+      // set the time for upload 
+      $user->setUtcTimestamp($utc_timestamp);
+      $user->setTimezoneOffset($offset);
 
       // create a file object
       $upload = new FileUploader();
@@ -73,13 +80,13 @@
          echo "An error occurred";
       }
 
-      $datas = $user->readAll();
-      foreach ($datas as $data) {
-         echo $data['id']. "<br>";
-         echo $data['first_name']. "<br>";
-         echo $data['last_name']. "<br>";
-         echo $data['user_city']. "<br>";
-      }
+      // $datas = $user->readAll();
+      // foreach ($datas as $data) {
+      //    echo $data['id']. "<br>";
+      //    echo $data['first_name']. "<br>";
+      //    echo $data['last_name']. "<br>";
+      //    echo $data['user_city']. "<br>";
+      // }
    }
 ?>
 
@@ -90,9 +97,8 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>DB Form</title>
  <script type="text/javascript" src="../Js/validate.js"></script>
- <script type="text/javascript" src="../Js/timezone.js"></script>
- <script type="text/javascript" src="../Js/jquery.min.js"></script>
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+ <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script> 
+       <script type="text/javascript" src="../Js/timezone.js"></script>
  <link rel="stylesheet" type="text/css" href="../Css/validate.css">
 </head>
 <body>
@@ -104,8 +110,8 @@
                <?php
                   session_start();
                   if (!empty($_SESSION['form_errors'])) {
-                      echo "" . $_SESSION['form_errors'];
-                      unset($_SESSION['form_errors']);
+                     echo "" . $_SESSION['form_errors'];
+                     unset($_SESSION['form_errors']);
                   }
                ?>
             </div>
@@ -132,15 +138,20 @@
          </tr>
 
          <tr>
-            <td>Profile Image: <input type="file" name="fileToUpload" id="fileToUpload" placeholder="Image"/></td>
+            <td>Profile Image: <input type="file" name="fileToUpload" id="fileToUpload" /></td>
          </tr>
 
          <tr>
-            <td> <button type="submit" name="btn-save"> <strong>Save</strong> </button></td>
+            <td> <button type="submit" name="btn-save" id="submit"> <strong>Save</strong> </button></td>
+
          </tr> 
+         <!-- hidden inputs -->
          <tr>
-            <input type="text" name="utc_timestamp" id="utc_timestamp" value="">
-            <input type="text" name="time_zone_offset" id="time_zone_offset" value="">
+            <td> <input type="hidden" name="utc_timestamp" id="utc_timestamp" value=""> </td> 
+         </tr>
+
+         <tr>
+            <td> <input type="hidden" name="time_zone_offset" id="time_zone_offset" value=""> </td>
          </tr>
 
          <tr>

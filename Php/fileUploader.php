@@ -3,7 +3,7 @@ include_once "DBConnector.php";
 
 class fileUploader
 {
-    private static $target_directory = "uploads/";
+    private static $target_directory = "../uploads/";
     private static $size_limit = 50000;
     private static $allowTypes = array('jpg','png','jpeg','gif','pdf');
     private $uploadOK= false;
@@ -19,7 +19,7 @@ class fileUploader
     }
 
     public function getUsername(){
-        return $this->$username;
+        return $this->username;
     }
 
     public function setOriginalName($fileName){
@@ -27,7 +27,7 @@ class fileUploader
     }
 
     public function getOriginalName(){
-        return $this->file_name;
+        return $this->fileName;
     }
 
     public function setType($fileType){
@@ -59,14 +59,12 @@ class fileUploader
 
         $conn = new DBConnector();
         $this->moveFile();
-        $imagename = $this->fileName;
-        $username = $this->username;
-
+        $imagename = $this->getOriginalName();
+        $username = $this->getUsername();
 
         if ($this->uploadOK==true) {
-            $res = mysqli_query($conn->conn, "UPDATE user SET image_name= '$imagename' WHERE username= '$username'") or die("Error".mysqli_error());
+            $res = mysqli_query($conn->conn, "UPDATE `user` SET `image_name` = '$imagename' WHERE `username` = '$username'") or die("Error".mysqli_error($conn->conn));
 
-            unset($_SESSION['username']);
         }
     }
 

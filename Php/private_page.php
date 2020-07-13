@@ -7,7 +7,6 @@ if(!isset($_SESSION['username'])){
 header("Location: login.php");
 }
 
-// echo $_SESSION['username']; 
 $method = $_SERVER["REQUEST_METHOD"];
 
 function fetchUserApiKey()
@@ -58,15 +57,17 @@ function fetchUserApiKey()
  <hr>
  <h4>We now put this nfeature of allowing users to generate an API Key. Click the button to generate the API key</h4>
  
- <button class="btn btn-primary" id="keygen">Generate API Key</button> <br><br>
+
+<form action="apikey.php" method="post">
+ <button type="submit" class="btn btn-primary" id="keygen">Generate API Key</button> <br><br>
 
  <!-- API Key text area  -->
  <strong>Your API Key</strong> (Note that if your API Key is already running applications, generating a new key will stop the application from functioning)<br>
-
    <textarea name="apikey" id="apikey" cols="100" rows="2" readonly><?php echo fetchUserApiKey();
  ?></textarea>
 <br>
-<input type="button" value="Save Key" class="btn btn-primary" onclick="Send_Data()" />
+<!-- <input type="submit" value="Save Key" class="btn btn-primary" onclick="Send_Data()" /> -->
+ </form>
  <br>
  <br>
  <h3>Service Description</h3>
@@ -100,19 +101,6 @@ function generateUUID() {
   $('#apikey').val(generateUUID());
  });
 
- function Send_Data (){
-var key = getElementById("apikey").value
-
-   var httpr = new XMLHttpRequest();
-   httpr.open("POST", "apikey.php", true);
-   httpr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-   httpr.onreadystatechange = function() {
-     if(httpr.readyState == 4 && httpr.status == 200){
-      document.getElementById("response").innerHTML = httpr.responseText;
-     }
-   }
-   httpr.send("key="+key);
- }
 </script>
 </body>
 

@@ -70,6 +70,8 @@ if(isset($_POST['btn-login'])){
    </tr>
   </table>
  </form>
+
+ <p>No account? Sign up <a href="lab1.php">here</a></p>
 </body>
 
 </html>

@@ -2,68 +2,29 @@
 include_once 'user.php';
 include_once 'DBConnector.php';
 
- session_start();
- if(!isset($_SESSION['username'])){
-  header("Location: login.php");
- }
+session_start();
+if(!isset($_SESSION['username'])){
+header("Location: login.php");
+}
 
- if($_SERVER('REQUEST_METHOD') !== 'POST'){
-   // don't allow users to access site with the url 
-   header('HTTP/1.0 403 Forbidden');
-   echo 'You are Forebidden';
- }else{
-   $api_key = null;
-   $api_key = generateApiKey(64); /*Generate a 64 chareacter API Key*/
-   header('Content-type: application/json');
-   echo generateResponse($api_key);
+// echo $_SESSION['username']; 
+$method = $_SERVER["REQUEST_METHOD"];
 
-   // API Key generating function 
-   function generateApiKey($str_length){
-     // base 62 map 
-     $chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function fetchUserApiKey()
+{
+  $conn = new DBconnector();
 
-     // get random bits for base 64 encoding and prevent '=' padding 
-     $bytes = openssl_random_pseudo_bytes(3*str_length/4+1);
+  $user = $_SESSION['username'];
+  $state1 = "SELECT * FROM `user` WHERE `username` = '$user' ";
+  $myquery = mysqli_query($conn->conn, $state1);
+  $user_array = mysqli_fetch_assoc($myquery);
+  $uid = $user_array['id'];
+  $state2 = "SELECT * FROM `api_keys` WHERE `user_id` = '$uid' ";
+  $good = mysqli_query($conn->conn, $state2) or die(mysqli_error($conn->conn));
+  $key =  mysqli_fetch_assoc($good);
+  return $key['api_key'];
+}
 
-     //convert base 64 to base 62 by mapping + and / to something from base 62 map
-     // use first 2 random bytes for the new xters 
-     $repl = unpack('C2', $bytes);
-
-     $first = $chars[$repl[1]%62];
-     $second = $chars[$repl[2]%62];
-     return strtr(substr(base64_encode($bytes), 0, $str_length), '+/', "$first$second");
-   }
-
-   function saveApiKey($api_key){
-     //save the api key code
-     $conn = new DBConnector;
-     $saved = false;
-
-     $user = $_SESSION['username'];
-     $ret = mysqli_query($conn->conn, "SELECT `id` FROM `user` WHERE `username` = `$user` ");
-
-     if($res = mysqli_query($conn->conn, "INSERT INTO `api_keys`(`user_id`, `api_key`) VALUES (`$ret`, `$api_key`)")){
-      $saved = true;
-     }else{
-      $saved = false;
-     }
-
-     return saved;
-   }
-
-   function generateResponse($api_key){
-    if(saveApiKey()){
-     $res = ['success' => 1, 'message' => $api_key];
-    }else{
-     $res = ['failed' => 0, 'message' => 'Oops somethind went wrong. Please try again'];
-    }
-    return json_encode($res);
-   }
-
-   // function fetchUserApiKey($){
-
-   // }
- }
 ?>
 
 <!DOCTYPE html>
@@ -76,7 +37,7 @@ include_once 'DBConnector.php';
 
  <!-- javascript files -->
  <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
- <script type="text/javascript" src="../Js/validate.js"></script>
+ <script type="text/javascript" src="./Js/validate.js"></script>
  <script type="text/javascript" src="../Js/apikey.js"></script>
 
  <!-- Css -->
@@ -90,23 +51,69 @@ include_once 'DBConnector.php';
 </head>
 
 <body>
+<div class="container">
  <p align="right"><a href="logout.php">Logout</a></p>
  <hr>
  <h3>Here, we will create an API that will allow Users/Developers to order items from external systems</h3>
  <hr>
  <h4>We now put this nfeature of allowing users to generate an API Key. Click the button to generate the API key</h4>
  
- <button class="btn btn-primary" id="api-key-btn">Generate API Key</button> <br><br>
+ <button class="btn btn-primary" id="keygen">Generate API Key</button> <br><br>
 
  <!-- API Key text area  -->
- <strong>Youur API Key</strong>(Note that if your API Key is already running applications, generating a new key will stop the application from functioning) <br>
+ <strong>Your API Key</strong> (Note that if your API Key is already running applications, generating a new key will stop the application from functioning)<br>
 
- <textarea name="api_key" id="api_key" cols="100" rows="2" readonly><?php echo fetchUserApiKey();?></textarea>
-
+   <textarea name="apikey" id="apikey" cols="100" rows="2" readonly><?php echo fetchUserApiKey();
+ ?></textarea>
+<br>
+<input type="button" value="Save Key" class="btn btn-primary" onclick="Send_Data()" />
+ <br>
+ <br>
  <h3>Service Description</h3>
  We have a serviceAPI that allows external applications to order food and also pull all order status by using the order id. Let's do it!
 
  <hr>
+</div>
+
+<script>
+function generateUUID() {
+ var d = new Date().getTime();
+
+ if (window.performance && typeof window.performance.now === "function") {
+  d += performance.now();
+ }
+
+ var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+  var r = (d + Math.random() * 16) % 16 | 0;
+  d = Math.floor(d / 16);
+  return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+ });
+
+ return uuid;
+}
+
+/**
+ * Generate new key and insert into input value
+ */
+
+ $('#keygen').on('click', function () {
+  $('#apikey').val(generateUUID());
+ });
+
+ function Send_Data (){
+var key = getElementById("apikey").value
+
+   var httpr = new XMLHttpRequest();
+   httpr.open("POST", "apikey.php", true);
+   httpr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+   httpr.onreadystatechange = function() {
+     if(httpr.readyState == 4 && httpr.status == 200){
+      document.getElementById("response").innerHTML = httpr.responseText;
+     }
+   }
+   httpr.send("key="+key);
+ }
+</script>
 </body>
 
 </html>

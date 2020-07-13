@@ -218,7 +218,7 @@ public function getTimezoneOffset()
     session_start();
     unset($_SESSION['username']);
     session_destroy();
-    header("Location: lab1.php");
+    header("Location: login.php");
   }
 }
 

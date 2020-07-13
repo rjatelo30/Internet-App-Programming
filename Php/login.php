@@ -15,7 +15,7 @@ if(isset($_POST['btn-login'])){
   $utc_timestamp = null;
   $offset = null;
 
-  $instance = new User($first_name, $last_name, $city, $username, $password, $error, $timezone_offset, $utc_timestamp);
+  $instance = new User($first_name, $last_name, $city, $username, $password, $error, $offset, $utc_timestamp);
 
   if($instance->isPasswordCorrect()){
     $instance->createSession();
@@ -44,8 +44,21 @@ if(isset($_POST['btn-login'])){
 </head>
 
 <body>
- <form action="<?=$_SERVER['PHP_SELF']?>" method="post" id="login" name="login">
+ <form action="<?=$_SERVER['PHP_SELF']?>" method="post" id="login" name="login" enctypr="application/x-www-form-urlencoded">
   <table align="center">
+  <tr>
+         <td>
+            <div id="form-errors">
+               <?php
+                  session_start();
+                  if (!empty($_SESSION['form_errors'])) {
+                     echo "" . $_SESSION['form_errors'];
+                     unset($_SESSION['form_errors']);
+                  }
+               ?>
+            </div>
+         </td>
+      </tr>
    <tr>
     <td><input type="text" name="username" placeholder="Username" required /></td>
    </tr>

@@ -130,8 +130,22 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'make' => [
+            'required' => 'Please enter the make of the car',
+            'unique' => 'This make already exists. Please enter a different one',
+        ],
+        'model' => [
+            'required' => 'Please enter the model of the car',
+            'unique' => 'This model already exists. Please enter a different one',
+        ],
+        'produced_on' => [
+            'required' => 'Please enter the date of car manufacture',
+            'unique' => 'A car with a similar date is already inserted. Please select another',
+        ],
+        'image' => [
+            'required' => 'Please select an image of the car',
+            'unique' => 'This image already exists. Please enter another',
+            'mimes:jpg,png,jpeg,gif,svg,JPG' => 'Invalid image format',
         ],
     ],
 
